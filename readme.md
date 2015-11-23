@@ -11,11 +11,11 @@ Pada dasarnya untuk memenangkan game ini pemain harus menjejerkan suatu 5 objek 
 
 Gomoku Njir akan menggunakan teknologi sebagai berikut:
 
-* Python
+* Python3
+* Tkinter - GUI library for python
 
 ### Installation
 
-You need Gulp installed globally:
 
 ```sh
 $ 
