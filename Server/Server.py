@@ -1,5 +1,6 @@
 import socket
 import select
+from Client import contoh
 import json
 
 
@@ -46,14 +47,16 @@ class Server(object):
         except OSError:
             pass
 
-""""
+"""
 a = Server()
 
 while True:
     sock, addr = a.socket.accept()
     print("koneksi pada",addr)
-    str = sock.recv(1024).decode("UTF-8")
-    print(str)
+    str = json.loads(sock.recv(1024).decode("UTF-8"))
+    x = str[0]
+    y = str[1]
+    print(x, " dan ", y)
     if str is not None:
         sock.close()
         break
