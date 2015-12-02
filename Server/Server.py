@@ -1,6 +1,5 @@
 import socket
 import select
-from Client import contoh
 import json
 
 
@@ -15,7 +14,6 @@ class Server(object):
         self.socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
         self.socket.bind((self.host,self.port))
         self.socket.listen(3)
-        # self.socket.setblocking(0)
         self.connect = True
 
 
