@@ -1,20 +1,24 @@
 
 
 class Board:
-    def __init__(self,connect):
+    def __init__(self):
         self.size = 20
-        #self.playerlist = [[], [], []] #default player : 3
+        self.playerlist = [[], []] #default player : 2
         self.board = [["0" for x in range(20)] for x in range(20)]
         self.win = False
+        self.isStart = False
+        self.turn = 0
 
     def placeonBoard(self,x, y, pion):
-        if (self.board[x][y] == 0):
-            self.board[x][y] == pion
+        if (self.board[x][y] == "0"):
+            self.board[x][y] = pion
+
+    def getboarditem(self, x, y):
+        return self.board[x][y]
 
     def countIdentic(self, x0, y0, xi, yi, pion):
         xincr = x0 + xi
         yincr = y0 + yi
-
         count = 0
         temp = pion
         while (temp == pion):
@@ -43,3 +47,30 @@ class Board:
 
     def checkDiagonalReverse(self, x0, y0, pion):
         return self.CheckWin(x0, y0, -1, -1, pion)
+
+    def isWin(self, x, y, pion):
+        if self.checkVertical(x, y, pion) or self.checkDiagonal(x, y, pion) or self.checkDiagonalReverse(x, y, pion) or self.checkHorizontal(x, y, pion):
+            return True
+
+    def isGameStarted(self):
+        return self.isStart
+
+    def startGame(self):
+        self.isStart = True
+
+    def stopGame(self):
+        self.isStart = False
+
+    def addPlayer(self):
+        self.playerlist.append(self, [])
+
+    def removePlayer(self, pion):
+        self.playerlist.remove(pion)
+
+    def getTurn(self):
+        return self.turn
+
+    def nextTurn(self):
+        self.turn+=1
+        if self.turn >= self.playerlist.len(): #Jika sudah giliran ke player maks, mulai lagi dari 0
+            self.turn = 0
