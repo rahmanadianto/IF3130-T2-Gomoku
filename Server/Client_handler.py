@@ -48,9 +48,10 @@ class Client_handler(object):
         if "login" in msg:
             msg = msg.split("login")
             for message in msg:
-                xgame = game.game()
+                self.game = game.game()
                 username = message
-                userid = xgame.login(username)
+                #print(message)
+                userid = self.game.login(username)
             if userid > 0:
                 self.id = userid
                 self.uname = username
@@ -59,6 +60,20 @@ class Client_handler(object):
             else:
                 msg_send.append(0)
             self.send(msg_send)
+        elif "createroom" in msg:
+            msg = msg.split("createroom")
+            for message in msg:
+                room_name = message
+                roomid = self.game.createRoom(self.id,room_name)
+                #print("***",message,"***")
+            if roomid > 0:
+                self.room_id = roomid
+                msg_send.append(1)
+                msg_send.append(roomid)
+            else:
+                msg_send.append(0)
+            self.send(msg_send)
+
 
 
 
@@ -75,8 +90,13 @@ while True:
     handler, addr = a.socket.accept()
     CL = Client_handler(game.game,handler,addr)
     print("koneksi pada",addr)
-    abu = CL.recv()
-    print(abu)
+    CL.recv()
+    print("added username: ",CL.uname," dengan id =",CL.id)
+    print("Username yang sedang online:",CL.game.existing_names)
+    CL.recv()
+    print("added room: ",CL.game.rooms[1].rname," dengan id =",CL.room_id)
+    for a in CL.game.rooms:
+        print("Daftar room: ",a.rname)
     if str is not None:
         CL.close()
         break

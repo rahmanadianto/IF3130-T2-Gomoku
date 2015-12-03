@@ -25,10 +25,11 @@ class game():
             del self.username[userid]
             if uname in self.existing_names:
                 self.existing_names.remove(uname)
+            return 1
 
     def createRoom(self, userid, room_name):
         self.last_id_room += 1
-        self.rooms.append(room.room(self.id_room, room_name))
+        self.rooms.append(room.room(self.last_id_room, room_name))
         self.joinRoom(userid,self.last_id_room)
         return self.last_id_room
 

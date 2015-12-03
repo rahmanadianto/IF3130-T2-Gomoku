@@ -7,4 +7,8 @@ coba = "loginanjing"
 cn.send(json.dumps(coba))
 print(cn.recv())
 
+coba = "createroomanjing_goreng"
+cn.send(json.dumps(coba))
+print(cn.recv())
+
 
