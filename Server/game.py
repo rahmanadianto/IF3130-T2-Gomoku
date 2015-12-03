@@ -1,5 +1,5 @@
 import threading
-from . import room
+import room
 
 
 class game():
