@@ -2,8 +2,9 @@ from Client import Connection
 import json
 
 cn = Connection.Connection()
-coba = "login2"
+coba = "loginanjing"
 
 cn.send(json.dumps(coba))
+print(cn.recv())
 
 
