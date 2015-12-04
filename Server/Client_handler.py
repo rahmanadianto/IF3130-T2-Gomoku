@@ -28,6 +28,12 @@ class Client_handler(object):
             except select.error:
                 self.close
 
+    def broadcastInRoom(self,message,room_id):
+        msg = json.dumps(message).encode()
+        for handler in self.game.client_handlers:
+            if room_id == handler.room_id:
+                handler.socket.sendall(msg)
+
     def recv(self):
         if self.connect:
             try:
@@ -76,6 +82,7 @@ class Client_handler(object):
                 msg_send = '{"type":"join_room","state":"success", "room_id":"'+str(self.room_id)+'"}'
             else:
                 msg_send = '{"type":"join_room","state":"failed", "room_id":"'+str(self.room_id)+'"}'
+            self.broadcastInRoom(self.game.rooms[self.room_id].users,self.room_id)
             self.send(msg_send)
         elif msg['type'] == "leave_room":
             userid = int(msg['user_id'])
@@ -111,6 +118,11 @@ class Client_handler(object):
             if success > 0:
                 msg_send = '{"type":"start","state":"success"}'
                 self.send(msg_send)
+        elif msg['type'] == "list_room":
+            self.send(self.game.rooms)
+        elif msg['type'] == "list_player":
+            roomid = msg['room_id']
+            self.send(self.game.rooms[roomid].users)
 
     def close(self):
         try:
