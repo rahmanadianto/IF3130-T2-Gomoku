@@ -2,6 +2,7 @@ import socket
 import select
 import json
 import game
+import room
 import Server
 
 class Client_handler(object):
@@ -23,7 +24,6 @@ class Client_handler(object):
             try:
                 _, ready_to_write, _ = select.select([],[self.socket],[])
                 if self.socket in ready_to_write:
-                    msg = json.dumps(msg)
                     self.socket.sendall(msg.encode())
             except select.error:
                 self.close
@@ -44,34 +44,59 @@ class Client_handler(object):
 
     def recv_msg(self,msg):
         msg = json.loads(msg.decode("UTF-8"))
-        msg_send = list()
-        if "login" in msg:
-            msg = msg.split("login")
-            for message in msg:
-                self.game = game.game()
-                username = message
-                #print(message)
-                userid = self.game.login(username)
+        if msg['type'] == "login":
+            message = msg['name']
+            username = message
+            #print(message)
+            userid = self.game.login(username)
             if userid > 0:
+
                 self.id = userid
                 self.uname = username
-                msg_send.append(1)
-                msg_send.append(userid)
+                msg_send = '{"type":"login","state":"success", "user_id":"'+str(self.id)+'"}'
             else:
-                msg_send.append(0)
+                msq_send = '{"type":"login","state":"failed", "user_id":"'+str(self.id)+'"}'
             self.send(msg_send)
-        elif "createroom" in msg:
-            msg = msg.split("createroom")
-            for message in msg:
-                room_name = message
-                roomid = self.game.createRoom(self.id,room_name)
-                #print("***",message,"***")
+        elif msg['type'] == "create_room":
+            message = msg['room_name']
+            room_name = message
+            roomid = self.game.createRoom(self.id,room_name)
+            #print("***",message,"***")
             if roomid > 0:
                 self.room_id = roomid
-                msg_send.append(1)
-                msg_send.append(roomid)
+                msg_send = '{"type":"create_room","state":"success", "room_id":"'+str(self.room_id)+'"}'
             else:
-                msg_send.append(0)
+                msg_send = '{"type":"create_room","state":"failed", "room_id":"'+str(self.room_id)+'"}'
+            self.send(msg_send)
+        elif msg['type'] == "join_room":
+            roomid = int(msg['room_id'])
+            success = self.game.joinRoom(self.id,roomid)
+            #print("***",message,"***")
+            if success > 0:
+                self.room_id = roomid
+                msg_send = '{"type":"join_room","state":"success", "room_id":"'+str(self.room_id)+'"}'
+            else:
+                msg_send = '{"type":"join_room","state":"failed", "room_id":"'+str(self.room_id)+'"}'
+            self.send(msg_send)
+        elif msg['type'] == "leave_room":
+            userid = int(msg['user_id'])
+            success = self.game.leaveRoom(userid)
+            #print("***",message,"***")
+            if success > 0:
+                self.room_id = -1
+                msg_send = '{"type":"leave_room","state":"success", "room_id":"'+str(self.room_id)+'"}'
+            else:
+                msg_send = '{"type":"leave_room","state":"failed", "room_id":"'+str(self.room_id)+'"}'
+            self.send(msg_send)
+        elif msg['type'] == "logout":
+            userid = int(msg['user_id'])
+            success = self.game.logout(userid)
+            #print("***",message,"***")
+            if success > 0:
+                del self
+                self.close()
+            else:
+                msg_send = '{"type":"logout","state":"failed", "room_id":"'+str(self.room_id)+'"}'
             self.send(msg_send)
 
 
@@ -85,18 +110,30 @@ class Client_handler(object):
         except OSError:
             pass
 
+    def __del__(self):
+        print ("User " + self.uname+ " dengan id " + str(self.id) + " logout")
+
+
 a = Server.Server()
+game = game.game()
 while True:
     handler, addr = a.socket.accept()
-    CL = Client_handler(game.game,handler,addr)
+    CL = Client_handler(game,handler,addr)
     print("koneksi pada",addr)
     CL.recv()
     print("added username: ",CL.uname," dengan id =",CL.id)
     print("Username yang sedang online:",CL.game.existing_names)
+    CL.game.rooms.append(room.room(1, "haiiii"))
+    CL.game.last_id_room += 1
     CL.recv()
-    print("added room: ",CL.game.rooms[1].rname," dengan id =",CL.room_id)
+    print("joined room: ",CL.game.rooms[CL.room_id-1].rname," dengan id =",CL.room_id)
     for a in CL.game.rooms:
         print("Daftar room: ",a.rname)
-    if str is not None:
-        CL.close()
-        break
+    CL.recv()
+    if(len(CL.game.rooms)>0):
+        for a in CL.game.rooms:
+            print("Daftar room: ",a.rname)
+    else:
+        print("tidak ada room")
+
+    CL.recv()
