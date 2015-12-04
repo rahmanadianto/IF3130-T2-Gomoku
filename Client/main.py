@@ -1,6 +1,8 @@
 from Client import Connection
 import json
+from Gameplay import Board
 
+board = Board.Board()
 cn = Connection.Connection()
 coba = '{"type":"login", "name" : "anjing"}'
 
@@ -21,17 +23,15 @@ if terima['state'] == "success":
     print(terima['room_id'])
 else:
     print(terima['type'] + " gagaaaallllll :(")
-
-coba = '{"type":"leave_room", "user_id" : "1"}'
-cn.send(coba)
+print("board room ini: \n")
+print(board.board)
+cn.send('{"type":"start","user_id":"1"}')
 terima = json.loads(cn.recv().decode("UTF-8"))
-if terima['state'] == "success":
-    print(terima['type'] + "berhasillllll!!!!!")
-    print(terima['room_id'])
-else:
-    print(terima['type'] + " gagaaaallllll :(")
-
-coba = '{"type":"logout", "user_id" : "1"}'
-cn.send(coba)
+gerak = '{"type":"move","user_id":"1","x":"0","y":"1"}'
+board.startGame()
+cn.send(gerak)
+terima = json.loads(cn.recv().decode("UTF-8"))
+board.placeonBoard(int(terima['x']),int(terima['y']),terima['pion'])
+print(board.board)
 
 

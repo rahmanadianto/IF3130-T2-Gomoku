@@ -11,7 +11,7 @@ class Client_handler(object):
         self.game = game
         self.socket = socket
         self.addr = addr
-        self.buffsize = 4096
+        self.buffsize = 8192
         self.connect = True
 
         self.id = -1
@@ -27,7 +27,6 @@ class Client_handler(object):
                     self.socket.sendall(msg.encode())
             except select.error:
                 self.close
-
 
     def recv(self):
         if self.connect:
@@ -93,14 +92,25 @@ class Client_handler(object):
             success = self.game.logout(userid)
             #print("***",message,"***")
             if success > 0:
-                del self
                 self.close()
+                del self
             else:
                 msg_send = '{"type":"logout","state":"failed", "room_id":"'+str(self.room_id)+'"}'
-            self.send(msg_send)
-
-
-
+                self.send(msg_send)
+        elif msg['type'] == "move":
+            userid = int(msg['user_id'])
+            x = int(msg['x'])
+            y = int(msg['y'])
+            success = self.game.move(userid, x, y)
+            if success > 0:
+                msg_send = '{"type":"move","state":"success", "x":"'+str(x)+'","y":"'+str(y)+'","pion":"'+self.game.rooms[self.game.user_room[userid]-1].board.playerlist[userid]+'"}'
+                self.send(msg_send)
+        elif msg['type'] == "start":
+            userid = int(msg['user_id'])
+            success = self.game.startGame(userid)
+            if success > 0:
+                msg_send = '{"type":"start","state":"success"}'
+                self.send(msg_send)
 
     def close(self):
         try:
@@ -124,16 +134,10 @@ while True:
     print("added username: ",CL.uname," dengan id =",CL.id)
     print("Username yang sedang online:",CL.game.existing_names)
     CL.game.rooms.append(room.room(1, "haiiii"))
+    CL.recv()
     CL.game.last_id_room += 1
     CL.recv()
     print("joined room: ",CL.game.rooms[CL.room_id-1].rname," dengan id =",CL.room_id)
-    for a in CL.game.rooms:
-        print("Daftar room: ",a.rname)
     CL.recv()
-    if(len(CL.game.rooms)>0):
-        for a in CL.game.rooms:
-            print("Daftar room: ",a.rname)
-    else:
-        print("tidak ada room")
-
-    CL.recv()
+    print("kondisi board sekarang: \n")
+    print(CL.game.rooms[CL.game.user_room[CL.id]-1].board.board)

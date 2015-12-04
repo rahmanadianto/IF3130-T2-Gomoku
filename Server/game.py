@@ -2,8 +2,11 @@ import threading
 import room
 
 
+
 class game():
     def __init__(self):
+        self.client_handlers = []
+
         self.existing_names = set()
         self.username = dict()
         self.last_id_user = 0
@@ -33,7 +36,6 @@ class game():
     def createRoom(self, userid, room_name):
         self.last_id_room += 1
         self.rooms.append(room.room(self.last_id_room, room_name))
-        self.joinRoom(userid,self.last_id_room)
         return self.last_id_room
 
 
@@ -54,3 +56,14 @@ class game():
             del self.rooms[room_id-1]
         return 1
 
+    def startGame(self,userid):
+        if (userid in self.rooms[self.user_room[userid]-1].users) and not(self.rooms[self.user_room[userid]-1].board.isGameStarted()):#and (len(self.rooms[self.user_room[userid]-1].users) >= 3)
+            self.rooms[self.user_room[userid]-1].board.startGame()
+            return 1
+
+    def move(self,userid,x,y):
+        if userid in self.rooms[self.user_room[userid]-1].users:
+            self.rooms[self.user_room[userid]-1].board.placeonBoard(x,y,self.rooms[self.user_room[userid]-1].board.playerlist[userid])
+            return 1
+        else:
+            return -1
